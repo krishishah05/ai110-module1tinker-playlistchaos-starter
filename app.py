@@ -53,15 +53,15 @@ with st.sidebar:
         submitted = st.form_submit_button("Add Song")
 
         if submitted and new_title:
-            # BUG 9: no whitespace trimming or normalization on title/artist/genre
+            # Fix 9: trim whitespace and normalize artist/genre to lowercase
             new_song = {
-                "title": new_title,
-                "artist": new_artist,
-                "genre": new_genre,
+                "title": new_title.strip(),
+                "artist": new_artist.strip().lower(),
+                "genre": new_genre.strip().lower(),
                 "energy": new_energy,
             }
             st.session_state.songs.append(new_song)
-            st.success(f"Added: {new_title}")
+            st.success(f"Added: {new_song['title']}")
 
 # ── Build playlists ──────────────────────────────────────────────────────────
 playlists = build_playlists(st.session_state.songs, st.session_state.profile)
@@ -103,13 +103,18 @@ with tab1:
     st.subheader("🎰 Lucky Pick")
     lucky_mode = st.selectbox("Pick from:", ["Any", "Hype", "Chill"])
     if st.button("🎲 Give me a song!"):
-        # BUG 10: always picks from all songs regardless of lucky_mode selection
-        pool = st.session_state.songs
+        # Fix 10: pick only from the selected mood playlist (or all combined for "Any")
+        if lucky_mode == "Any":
+            pool = (
+                playlists["Hype"] + playlists["Chill"] + playlists["Mixed"]
+            )
+        else:
+            pool = playlists[lucky_mode]
         if pool:
             pick = random.choice(pool)
             st.success(f"🎵 **{pick['title']}** by {pick['artist']} (⚡{pick['energy']})")
         else:
-            st.warning("No songs available!")
+            st.warning(f"No songs in the {lucky_mode} playlist!")
 
 # ── Tab 2: Search ─────────────────────────────────────────────────────────────
 with tab2:
@@ -134,8 +139,8 @@ with tab3:
     c1, c2, c3 = st.columns(3)
     c1.metric("Total Songs", stats["total"])
     c2.metric("Average Energy", stats["avg_energy"])
-    # BUG 11: displays raw fraction (e.g., 0.375) instead of formatted percentage
-    c3.metric("Hype Ratio", stats["hype_ratio"])
+    # Fix 11: display hype ratio as a formatted percentage string
+    c3.metric("Hype Ratio", f"{stats['hype_ratio']}%")
 
     st.divider()
     st.write("**Breakdown:**")
