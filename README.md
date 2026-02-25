@@ -76,6 +76,12 @@ This app was originally generated with intentional bugs for a debugging exercise
 
 ---
 
+## Summary
+
+This project demonstrates debugging skills through a Streamlit-based playlist organizer. Starting from a buggy initial implementation, the activity involves identifying and fixing logical errors in playlist classification, search, random selection, and statistics calculation. The end result is a working app that correctly sorts songs into mood-based playlists using configurable energy thresholds and genre rules.
+
+---
+
 ## License
 
 MIT
