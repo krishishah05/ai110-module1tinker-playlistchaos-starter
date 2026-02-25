@@ -24,6 +24,24 @@ if "profile" not in st.session_state:
         "chill_max_energy": 3,
     }
 
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def render_song(song):
+    """Display a single song entry."""
+    st.write(
+        f"**{song['title']}** — {song['artist']} ({song['genre']}, ⚡{song['energy']})"
+    )
+
+
+def render_playlist(songs, empty_message):
+    """Render a list of songs, or a placeholder when empty."""
+    if songs:
+        for song in songs:
+            render_song(song)
+    else:
+        st.info(empty_message)
+
+
 # ── Header ───────────────────────────────────────────────────────────────────
 st.title("🎵 Playlist Chaos")
 st.caption("Your AI-powered mood playlist organizer (now with more chaos)")
@@ -53,7 +71,6 @@ with st.sidebar:
         submitted = st.form_submit_button("Add Song")
 
         if submitted and new_title:
-            # Fix 9: trim whitespace and normalize artist/genre to lowercase
             new_song = {
                 "title": new_title.strip(),
                 "artist": new_artist.strip().lower(),
@@ -75,27 +92,15 @@ with tab1:
 
     with col1:
         st.subheader("🔥 Hype")
-        if playlists["Hype"]:
-            for song in playlists["Hype"]:
-                st.write(f"**{song['title']}** — {song['artist']} ({song['genre']}, ⚡{song['energy']})")
-        else:
-            st.info("No hype songs yet.")
+        render_playlist(playlists["Hype"], "No hype songs yet.")
 
     with col2:
         st.subheader("😌 Chill")
-        if playlists["Chill"]:
-            for song in playlists["Chill"]:
-                st.write(f"**{song['title']}** — {song['artist']} ({song['genre']}, ⚡{song['energy']})")
-        else:
-            st.info("No chill songs yet.")
+        render_playlist(playlists["Chill"], "No chill songs yet.")
 
     with col3:
         st.subheader("🎲 Mixed")
-        if playlists["Mixed"]:
-            for song in playlists["Mixed"]:
-                st.write(f"**{song['title']}** — {song['artist']} ({song['genre']}, ⚡{song['energy']})")
-        else:
-            st.info("No mixed songs yet.")
+        render_playlist(playlists["Mixed"], "No mixed songs yet.")
 
     st.divider()
 
@@ -103,13 +108,11 @@ with tab1:
     st.subheader("🎰 Lucky Pick")
     lucky_mode = st.selectbox("Pick from:", ["Any", "Hype", "Chill"])
     if st.button("🎲 Give me a song!"):
-        # Fix 10: pick only from the selected mood playlist (or all combined for "Any")
-        if lucky_mode == "Any":
-            pool = (
-                playlists["Hype"] + playlists["Chill"] + playlists["Mixed"]
-            )
-        else:
-            pool = playlists[lucky_mode]
+        pool = (
+            playlists["Hype"] + playlists["Chill"] + playlists["Mixed"]
+            if lucky_mode == "Any"
+            else playlists[lucky_mode]
+        )
         if pool:
             pick = random.choice(pool)
             st.success(f"🎵 **{pick['title']}** by {pick['artist']} (⚡{pick['energy']})")
@@ -127,7 +130,7 @@ with tab2:
         if results:
             st.write(f"Found **{len(results)}** result(s):")
             for song in results:
-                st.write(f"- **{song['title']}** by {song['artist']} [{song['genre']}] ⚡{song['energy']}")
+                render_song(song)
         else:
             st.warning("No songs found.")
 
@@ -139,7 +142,6 @@ with tab3:
     c1, c2, c3 = st.columns(3)
     c1.metric("Total Songs", stats["total"])
     c2.metric("Average Energy", stats["avg_energy"])
-    # Fix 11: display hype ratio as a formatted percentage string
     c3.metric("Hype Ratio", f"{stats['hype_ratio']}%")
 
     st.divider()
